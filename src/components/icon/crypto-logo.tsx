@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { getCryptoLogoUrl } from '../../utils/logo-dev'
 
 type CryptoLogoProps = {
@@ -11,11 +11,13 @@ type CryptoLogoProps = {
 
 export default function CryptoLogo({ symbol, alt, size = 20, style, className }: CryptoLogoProps) {
   const src = useMemo(() => getCryptoLogoUrl(symbol, { size }), [symbol, size])
-  const innerSize = Math.max(10, Math.round(size * 0.8))
+  const [hasError, setHasError] = useState(false)
 
-  if (!src) {
-    return null
-  }
+  useEffect(() => {
+    setHasError(false)
+  }, [src])
+
+  const innerSize = Math.max(10, Math.round(size * 0.8))
 
   return (
     <span
@@ -34,13 +36,35 @@ export default function CryptoLogo({ symbol, alt, size = 20, style, className }:
         ...style,
       }}
     >
-      <img
-        src={src}
-        alt={alt ?? `${symbol} logo`}
-        width={size}
-        height={size}
-        style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
-      />
+      {!src || hasError ? (
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: innerSize,
+            height: innerSize,
+            borderRadius: '999px',
+            background: 'transparent',
+            color: 'var(--canvas-text-primary)',
+            fontSize: Math.max(10, Math.floor(innerSize * 0.34)),
+            fontWeight: 700,
+            lineHeight: 1,
+            textTransform: 'uppercase',
+          }}
+        >
+          {symbol.slice(0, 2)}
+        </span>
+      ) : (
+        <img
+          src={src}
+          alt={alt ?? `${symbol} logo`}
+          width={size}
+          height={size}
+          onError={() => setHasError(true)}
+          style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      )}
     </span>
   )
 }
